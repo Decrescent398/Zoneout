@@ -1,7 +1,18 @@
+import socket
+import os
+import requests
 from flask import Flask, request
-import os, requests
 from threading import Thread
 from src.app import run
+
+# 🔧 Force kill socket if it's in TIME_WAIT (before Flask starts)
+sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+try:
+    sock.bind(("0.0.0.0", 3000))
+    sock.close()
+except OSError:
+    print("⚠️ Warning: Port 3000 is stuck. Trying to use it anyway...")
 
 app = Flask(__name__)
 
@@ -35,4 +46,4 @@ if __name__ == "__main__":
     # Start Slack bot in background
     Thread(target=start_bot).start()
     # Start Flask server
-    app.run(host="0.0.0.0", port=3000)
+    app.run(host="0.0.0.0", port=3000, threaded=True)
