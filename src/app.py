@@ -105,4 +105,5 @@ def message_hello(event, message, client, body):
 
 
 def run():
-    SocketModeHandler(app, SLACK_APP_TOKEN).start()
+    handler = SocketModeHandler(app, SLACK_APP_TOKEN)
+    handler.start()
