@@ -54,29 +54,26 @@ def fetch_token(context):
 def get_store():
     return store
 
+def authorize(context):
+    bot = store.find_bot(enterprise_id=context.get("enterprise_id"), team_id=context["team_id"])
+    if not bot:
+        raise Exception("Bot not found for team")
+    return {
+        "bot_token": bot.bot_token,
+        "bot_user_id": bot.bot_user_id,
+    }
+
 app = App(
     signing_secret=SLACK_SIGNING_SECRET,
-    installation_store=store)
+    installation_store=store,
+    authorize=authorize  # ← add this
+)
 
-'''
+app = App(
+    signing_secret=SLACK_SIGNING_SECRET,
+    installation_store=store,
+    authorize=authorize)
 
-10am
-10 am
-10AM
-10 AM
-
-10:00AM
-10 :00AM
-10: 00AM
-10:00 AM
-10 : 00AM
-10: 00 AM
-10 :00 AM
-10 : 00 AM
-
-10 00AM
-10 00 AM
-'''
 
 time_pattern = re.compile(
     r"""\b
