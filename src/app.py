@@ -60,7 +60,7 @@ class FileInstallationStore(InstallationStore):
             raise TypeError(f"Object of type {o.__class__.__name__} is not JSON serializable")
     
         with open(self.path, "w") as f:
-            json.dump(data, f)
+            json.dump(data, f, default=default_serializer)
 
 store = FileInstallationStore()
 
