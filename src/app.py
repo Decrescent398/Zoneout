@@ -54,7 +54,7 @@ class FileInstallationStore(InstallationStore):
 
     def _save_all(self, data):
         with open(self.path, "w") as f:
-            json.dump(data, f)
+            json.dump(str(data), f) #Needs to be converted to str since json can't deal with datetime objects
 
 store = FileInstallationStore()
 
