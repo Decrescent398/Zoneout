@@ -56,6 +56,3 @@ def oauth_redirect():
     )
 
     return f"✅ {auth['team']['name']} installed the bot!"
-
-if __name__ == "__main__":
-    app.run(port=5000)
