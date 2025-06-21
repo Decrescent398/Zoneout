@@ -1,4 +1,4 @@
-import os, requests, threading, datetime
+import os, requests, threading, datetime, pprint
 from dotenv import load_dotenv
 from waitress import serve
 from flask import Flask, request, redirect
@@ -32,6 +32,7 @@ def oauth_redirect():
     })
 
     auth = res.json()
+    pprint(auth)
     if not auth.get("ok"):
         return f"Slack error: {auth}", 400
 
