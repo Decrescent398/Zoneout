@@ -38,10 +38,8 @@ def oauth_redirect():
     # Save bot token + team info
     store.save(
         Installation(
-            client_id=SLACK_CLIENT_ID,
             app_id=auth["app_id"],
             enterprise_id=None,
-            enterprise_name=None,
             team_id=auth["team"]["id"],
             team_name=auth["team"]["name"],
             bot_token=auth["access_token"],
@@ -49,7 +47,6 @@ def oauth_redirect():
             user_id=auth["authed_user"]["id"],
             incoming_webhook=auth.get("incoming_webhook"),
             is_enterprise_install=auth.get("is_enterprise_install", False),
-            token_type="bot",
         )
     )
 
