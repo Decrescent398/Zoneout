@@ -41,11 +41,10 @@ def oauth_redirect():
             app_id=auth["app_id"],
             enterprise_id=None,
             team_id=auth["team"]["id"],
-            team_name=auth["team"]["name"],
             bot_token=auth["access_token"],
             bot_user_id=auth["bot_user_id"],
             user_id=auth["authed_user"]["id"],
-            incoming_webhook=auth.get("incoming_webhook"),
+            incoming_webhook_url=auth.get("incoming_webhook", {}).get("url"),
             is_enterprise_install=auth.get("is_enterprise_install", False),
         )
     )
