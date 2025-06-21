@@ -57,11 +57,11 @@ def oauth_redirect():
 
 def run():
     print("Bolt app is running")
-    flask_thread = threading.Thread(target=lambda: serve(slack_app, host="127.0.0.1", port="5050"))
+    flask_thread = threading.Thread(target=lambda: serve(flask_app, host="127.0.0.1", port="5050"))
     flask_thread.start()
 
     print("Flask redirect is online")
-    handler= SocketModeHandler(flask_app, SLACK_APP_TOKEN)
+    handler= SocketModeHandler(slack_app, SLACK_APP_TOKEN)
     handler.connect()
     threading.Event().wait()
 
