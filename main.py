@@ -32,7 +32,7 @@ def oauth_redirect():
     })
 
     auth = res.json()
-    pprint(auth)
+    pprint.pprint(auth)
     if not auth.get("ok"):
         return f"Slack error: {auth}", 400
 
