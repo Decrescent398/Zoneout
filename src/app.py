@@ -1,10 +1,8 @@
-import os, re, json, threading
+import os, re, json
 from datetime import datetime
 from dotenv import load_dotenv
 from zoneinfo import ZoneInfo
-from waitress import serve
 from slack_bolt import App
-from slack_bolt.adapter.socket_mode import SocketModeHandler
 from slack_sdk.oauth.installation_store import InstallationStore, Installation, Bot
 
 load_dotenv()
@@ -57,12 +55,13 @@ def authorize(context):
         "bot_user_id": bot.bot_user_id,
     }
 
-app = App(
+slack_app = App(
     signing_secret=SLACK_SIGNING_SECRET,
     installation_store=store,
     authorize=authorize
 )
 
+#Might be unaccounted
 time_pattern = re.compile(
     r"""\b
     (?P<h12_hour>0?[1-9]|1[0-2])
@@ -75,7 +74,7 @@ time_pattern = re.compile(
     """, re.VERBOSE
 )
 
-@app.message(time_pattern)
+@slack_app.message(time_pattern)
 def message_hello(event, message, client, body):
 
     if event.get("subtype") == "bot_message":
@@ -134,14 +133,3 @@ def message_hello(event, message, client, body):
             user=person,
             text=user_text
         )
-
-
-def run():
-    print("Bolt app is running")
-    flask_thread = threading.Thread(target=lambda: serve(app, host="127.0.0.1", port="5050"))
-    flask_thread.start()
-
-    print("Flask redirect is online")
-    handler= SocketModeHandler(app, SLACK_APP_TOKEN)
-    handler.connect()
-    threading.Event().wait()

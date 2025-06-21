@@ -1,23 +1,24 @@
-import os
-import requests
-from flask import Flask, request, redirect
+import os, requests, threading
 from dotenv import load_dotenv
-from src.app import get_store
-from src.app import run
+from waitress import serve
+from flask import Flask, request, redirect
+from src.app import get_store, slack_app
+from slack_bolt.adapter.socket_mode import SocketModeHandler
 from slack_sdk.oauth.installation_store.models.installation import Installation
 
 load_dotenv()
 SLACK_CLIENT_ID = os.getenv("SLACK_CLIENT_ID")
 SLACK_CLIENT_SECRET = os.getenv("SLACK_CLIENT_SECRET")
+SLACK_APP_TOKEN = os.getenv("SLACK_APP_TOKEN")
 
-app = Flask(__name__)
+flask_app = Flask(__name__)
 store = get_store()
 
-@app.route("/slack/install")
+@flask_app.route("/slack/install")
 def install():
     return redirect(f"https://slack.com/oauth/v2/authorize?client_id={SLACK_CLIENT_ID}&scope=channels:history,channels:join,channels:read,chat:write,chat:write.public,groups:history,im:history,mpim:history,users:read&user_scope=")
 
-@app.route("/slack/oauth_redirect")
+@flask_app.route("/slack/oauth_redirect")
 def oauth_redirect():
     code = request.args.get("code")
     if not code:
@@ -53,6 +54,16 @@ def oauth_redirect():
     )
 
     return f"✅ {auth['team']['name']} installed the bot!"
+
+def run():
+    print("Bolt app is running")
+    flask_thread = threading.Thread(target=lambda: serve(slack_app, host="127.0.0.1", port="5050"))
+    flask_thread.start()
+
+    print("Flask redirect is online")
+    handler= SocketModeHandler(flask_app, SLACK_APP_TOKEN)
+    handler.connect()
+    threading.Event().wait()
 
 if  __name__ == "__main__":
     run()
