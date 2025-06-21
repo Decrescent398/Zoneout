@@ -43,8 +43,14 @@ class FileInstallationStore(InstallationStore):
         return Bot(**data) if data else None
 
     def _load_all(self):
+        if os.path.getsize(self.path) == 0:
+            return {}
         with open(self.path, "r") as f:
-            return json.load(f)
+            try:
+                return json.load(f)
+            except json.JSONDecodeError:
+                print("installations.json is corrupted or empty. Resetting.")
+                return {}
 
     def _save_all(self, data):
         with open(self.path, "w") as f:
@@ -70,7 +76,6 @@ slack_app = App(
     authorize=authorize
 )
 
-#Might be unaccounted
 time_pattern = re.compile(
     r"""\b
     (?P<h12_hour>0?[1-9]|1[0-2])
@@ -91,14 +96,14 @@ def message_hello(event, message, client, body):
     
     text = event.get("text", "")
 
-    matches = {}
+    matches = []
 
     for match in time_pattern.finditer(text):
         h = int(match.group("h12_hour"))
         m = int(match.group("h12_minute") or "00")
         ampm = match.group("h12_ampm").upper()
         dt_obj = datetime.strptime(f"{h}:{m} {ampm}", "%I:%M %p")
-        matches[match] = dt_obj.time()
+        matches.append(dt_obj.time())
 
     user = message['user']
     channel = message['channel']
@@ -112,30 +117,32 @@ def message_hello(event, message, client, body):
     ephs = client.conversations_members(channel=channel)
     members = list(ephs["members"])
     bot_user_id = body["authorizations"][0]["user_id"]
-    members.remove(user)
-    members.remove(bot_user_id)
+    members = [m for m in members if m not in (user, bot_user_id)]
 
     for person in members:
-        
+
+        p_details = client.users_info(user=person)
+
+        try:
+            local_timezone = ZoneInfo(p_details["user"]["tz"])
+        except: #guests/ other bots with no timezone
+            continue
+
         user_text = ""
 
         for match in matches:
 
-            parsed_time = matches[match]
-            naive_dt = datetime.combine(global_now.date(), parsed_time, tzinfo=global_timezone)
+            naive_dt = datetime.combine(global_now.date(), match)
             global_time = naive_dt.replace(tzinfo=global_timezone)
-
-            p_details = client.users_info(user=person)
-            local_timezone = ZoneInfo(p_details["user"]["tz"])
 
             local_time = global_time.astimezone(local_timezone) #ZoneInfo to handle DST
 
             if local_time.date() < global_time.date():
-                user_text += f"Thats *{local_time.strftime("%I:%M %p")} the previous day for you*\n"
+                user_text += f"Thats *{local_time.strftime('%I:%M %p')} the previous day for you*\n"
             elif local_time.date() > global_time.date():
-                user_text += f"Thats *{local_time.strftime("%I:%M %p")} the next day for you*\n"
+                user_text += f"Thats *{local_time.strftime('%I:%M %p')} the next day for you*\n"
             else:
-                user_text += f"Thats *{local_time.strftime("%I:%M %p")} today for you*\n"
+                user_text += f"Thats *{local_time.strftime('%I:%M %p')} today for you*\n"
 
         client.chat_postEphemeral(
             channel=channel,
