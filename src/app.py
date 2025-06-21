@@ -82,7 +82,6 @@ def authorize(context):
         bot_user_id=bot.bot_user_id,
         team_id=bot.team_id,
         enterprise_id=bot.enterprise_id,
-        user_id=bot.user_id,
     )
 
 
