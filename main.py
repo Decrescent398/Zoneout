@@ -4,7 +4,7 @@ from waitress import serve
 from flask import Flask, request, redirect
 from src.app import get_store, slack_app
 from slack_bolt.adapter.socket_mode import SocketModeHandler
-from slack_sdk.oauth.installation_store.models.installation import Installation
+from slack_sdk.oauth.installation_store.models.installation import Installation, Bot
 
 load_dotenv()
 SLACK_CLIENT_ID = os.getenv("SLACK_CLIENT_ID")
@@ -52,6 +52,16 @@ def oauth_redirect():
             token_type="bot",
         )
     )
+
+    store.save_bot(Bot(
+        app_id=auth["app_id"],
+        enterprise_id=None,
+        team_id=auth["team"]["id"],
+        bot_token=auth["access_token"],
+        bot_user_id=auth["bot_user_id"],
+        bot_scopes=auth.get("scope", ""),
+        is_enterprise_install=auth.get("is_enterprise_install", False)
+    ))
 
     return f"✅ {auth['team']['name']} installed the bot!"
 

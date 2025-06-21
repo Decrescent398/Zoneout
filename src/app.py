@@ -22,15 +22,24 @@ class FileInstallationStore(InstallationStore):
 
     def save(self, installation: Installation):
         all_data = self._load_all()
-        all_data[installation.team_id] = installation.to_dict()
+        team_data = all_data.get(installation.team_id, {})
+        team_data["installation"] = installation.to_dict()
+        all_data[installation.team_id] = team_data
+        self._save_all(all_data)
+
+    def save_bot(self, bot: Bot):
+        all_data = self._load_all()
+        team_data = all_data.get(bot.team_id, {})
+        team_data["bot"] = bot.to_dict()
+        all_data[bot.team_id] = team_data
         self._save_all(all_data)
 
     def find_installation(self, *, enterprise_id: str | None, team_id: str, user_id: str | None = None):
-        data = self._load_all().get(team_id)
+        data = self._load_all().get(team_id, {}).get("installation")
         return Installation(**data) if data else None
 
     def find_bot(self, *, enterprise_id: str | None, team_id: str):
-        data = self._load_all().get(team_id)
+        data = self._load_all().get(team_id, {}).get("bot")
         return Bot(**data) if data else None
 
     def _load_all(self):
