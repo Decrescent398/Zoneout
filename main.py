@@ -1,4 +1,4 @@
-import os, requests, threading
+import os, requests, threading, datetime
 from dotenv import load_dotenv
 from waitress import serve
 from flask import Flask, request, redirect
@@ -55,6 +55,8 @@ def oauth_redirect():
         team_id=auth["team"]["id"],
         bot_token=auth["access_token"],
         bot_user_id=auth["bot_user_id"],
+        bot_id=auth["bot_id"],
+        installed_at= datetime.utcnow(),
         bot_scopes=auth.get("scope", ""),
         is_enterprise_install=auth.get("is_enterprise_install", False)
     ))
