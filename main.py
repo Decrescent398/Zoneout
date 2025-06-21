@@ -31,6 +31,7 @@ def oauth_redirect():
         "code": code,
         "client_id": SLACK_CLIENT_ID,
         "client_secret": SLACK_CLIENT_SECRET,
+        "redirect_uri": "https://decrescent.hackclub.app/slack/oauth_redirect"
     })
 
     auth = res.json()
