@@ -153,13 +153,14 @@ def message_hello(event, message, client, body):
             local_time = global_time.astimezone(local_timezone) #ZoneInfo to handle DST
 
             if local_time.date() < global_time.date():
-                user_text += f"*{local_time.strftime('%I:%M %p')} the previous day for you*"
+                user_text += f"*{local_time.strftime('%I:%M %p')} the previous day*"
             elif local_time.date() > global_time.date():
-                user_text += f"*{local_time.strftime('%I:%M %p')} the next day for you*\n"
+                user_text += f"*{local_time.strftime('%I:%M %p')}*"
             else:
-                user_text += f"*{local_time.strftime('%I:%M %p')} on the same day for you*\n"
+                user_text += f"*{local_time.strftime('%I:%M %p')} on the same day*"
 
-            user_text += ", " if not matches.index(match) == -1 else ""
+            user_text += " and" if matches.index(match) == len(matches)-2 else ""
+            user_text += ", " if not matches.index(match) == -1 else " for you"
 
         client.chat_postEphemeral(
             channel=channel,
