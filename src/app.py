@@ -53,8 +53,14 @@ class FileInstallationStore(InstallationStore):
                 return {}
 
     def _save_all(self, data):
+
+        def default_serializer(o):
+            if isinstance(o, datetime):
+                return o.isoformat()
+            raise TypeError(f"Object of type {o.__class__.__name__} is not JSON serializable")
+    
         with open(self.path, "w") as f:
-            json.dump(str(data), f) #Needs to be converted to str since json can't deal with datetime objects
+            json.dump(data, f)
 
 store = FileInstallationStore()
 
