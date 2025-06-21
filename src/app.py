@@ -1,15 +1,62 @@
-import os, re
+import os, re, json
 from datetime import datetime
 from dotenv import load_dotenv
+from zoneinfo import ZoneInfo
+import threading
 from slack_bolt import App
 from slack_bolt.adapter.socket_mode import SocketModeHandler
-from zoneinfo import ZoneInfo
+from slack_sdk.oauth.installation_store import InstallationStore, Installation, Bot
+from slack_sdk.oauth.installation_store.models import installation as install_model
 
 load_dotenv()
-SLACK_BOT_TOKEN = os.getenv('SLACK_BOT_TOKEN')
+SLACK_CLIENT_ID = os.getenv('SLACK_CLIENT_ID')
+SLACK_CLIENT_SECRET = os.getenv('SLACK_CLIENT_SECRET')
+SLACK_SIGNING_SECRET = os.getenv('SLACK_SIGNING_SECRET')
 SLACK_APP_TOKEN = os.getenv('SLACK_APP_TOKEN')
 
-app = App(token=SLACK_BOT_TOKEN)
+INSTALLATIONS_FILE = "installations.json"
+
+class FileInstallationStore(InstallationStore):
+    def __init__(self):
+        self.path = INSTALLATIONS_FILE
+        if not os.path.exists(self.path):
+            with open(self.path, "w") as f:
+                json.dump({}, f)
+
+    def save(self, installation: Installation):
+        all_data = self._load_all()
+        all_data[installation.team_id] = installation.to_dict()
+        self._save_all(all_data)
+
+    def find_installation(self, *, enterprise_id: str | None, team_id: str, user_id: str | None = None):
+        data = self._load_all().get(team_id)
+        return Installation(**data) if data else None
+
+    def find_bot(self, *, enterprise_id: str | None, team_id: str):
+        data = self._load_all().get(team_id)
+        return Bot(**data) if data else None
+
+    def _load_all(self):
+        with open(self.path, "r") as f:
+            return json.load(f)
+
+    def _save_all(self, data):
+        with open(self.path, "w") as f:
+            json.dump(data, f)
+
+store = FileInstallationStore()
+
+def fetch_token(context):
+    team_id = context["team_id"]
+    bot = store.find_bot(enterprise_id=None, team_id=team_id)
+    return bot.bot_token if bot else None
+
+def get_store():
+    return store
+
+app = App(
+    signing_secret=SLACK_SIGNING_SECRET,
+    installation_store=store)
 
 '''
 
@@ -106,4 +153,5 @@ def message_hello(event, message, client, body):
 
 def run():
     handler = SocketModeHandler(app, SLACK_APP_TOKEN)
-    handler.start()
+    handler.connect()
+    threading.Event().wait()

@@ -1,49 +1,61 @@
-import socket
 import os
 import requests
-from flask import Flask, request
-from threading import Thread
-from src.app import run
+from flask import Flask, request, redirect
+from dotenv import load_dotenv
+from src.app import get_store
+from slack_sdk.oauth.installation_store.models.installation import Installation
 
-# 🔧 Force kill socket if it's in TIME_WAIT (before Flask starts)
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-try:
-    sock.bind(("0.0.0.0", 3000))
-    sock.close()
-except OSError:
-    print("⚠️ Warning: Port 3000 is stuck. Trying to use it anyway...")
+load_dotenv()
+SLACK_CLIENT_ID = os.getenv("SLACK_CLIENT_ID")
+SLACK_CLIENT_SECRET = os.getenv("SLACK_CLIENT_SECRET")
 
 app = Flask(__name__)
+store = get_store()
 
-@app.route("/")
-def index():
-    return "✅ Slack bot is running"
+@app.route("/slack/install")
+def install():
+    return redirect(
+        f"https://slack.com/oauth/v2/authorize"
+        f"?client_id={SLACK_CLIENT_ID}"
+        f"&scope=chat:write,commands,app_mentions:read"
+        f"&user_scope="
+    )
 
 @app.route("/slack/oauth_redirect")
 def oauth_redirect():
     code = request.args.get("code")
     if not code:
-        return "Missing code", 400
+        return "Missing `code` param", 400
 
-    response = requests.post("https://slack.com/api/oauth.v2.access", data={
-        "client_id": os.getenv("SLACK_CLIENT_ID"),
-        "client_secret": os.getenv("SLACK_CLIENT_SECRET"),
-        "code": code
+    res = requests.post("https://slack.com/api/oauth.v2.access", data={
+        "code": code,
+        "client_id": SLACK_CLIENT_ID,
+        "client_secret": SLACK_CLIENT_SECRET,
     })
 
-    data = response.json()
-    if not data.get("ok"):
-        return f"Slack error: {data}", 400
+    auth = res.json()
+    if not auth.get("ok"):
+        return f"Slack error: {auth}", 400
 
-    # Store bot token/team info here if needed
-    return "✅ Slack App Installed"
+    # Save bot token + team info
+    store.save(
+        Installation(
+            client_id=SLACK_CLIENT_ID,
+            app_id=auth["app_id"],
+            enterprise_id=None,
+            enterprise_name=None,
+            team_id=auth["team"]["id"],
+            team_name=auth["team"]["name"],
+            bot_token=auth["access_token"],
+            bot_user_id=auth["bot_user_id"],
+            user_id=auth["authed_user"]["id"],
+            incoming_webhook=auth.get("incoming_webhook"),
+            is_enterprise_install=auth.get("is_enterprise_install", False),
+            token_type="bot",
+        )
+    )
 
-def start_bot():
-    run()
+    return f"✅ {auth['team']['name']} installed the bot!"
 
 if __name__ == "__main__":
-    # Start Slack bot in background
-    Thread(target=start_bot).start()
-    # Start Flask server
-    app.run(host="0.0.0.0", port=3000, threaded=True)
+    app.run(port=5000)
