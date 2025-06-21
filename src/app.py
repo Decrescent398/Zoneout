@@ -3,6 +3,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 from zoneinfo import ZoneInfo
 from slack_bolt import App
+from slack_bolt.authorization.authorize_result import AuthorizeResult
 from slack_sdk.oauth.installation_store import InstallationStore, Installation, Bot
 
 load_dotenv()
@@ -68,13 +69,22 @@ def get_store():
     return store
 
 def authorize(context):
-    bot = store.find_bot(enterprise_id=context.get("enterprise_id"), team_id=context["team_id"])
+    bot = store.find_bot(
+        enterprise_id=context.get("enterprise_id"),
+        team_id=context["team_id"]
+    )
+
     if not bot:
         raise Exception("Bot not found for team")
-    return {
-        "bot_token": bot.bot_token,
-        "bot_user_id": bot.bot_user_id,
-    }
+
+    return AuthorizeResult(
+        bot_token=bot.bot_token,
+        bot_user_id=bot.bot_user_id,
+        team_id=bot.team_id,
+        enterprise_id=bot.enterprise_id,
+        user_id=bot.user_id,
+    )
+
 
 slack_app = App(
     signing_secret=SLACK_SIGNING_SECRET,
