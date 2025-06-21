@@ -6,7 +6,6 @@ import threading
 from slack_bolt import App
 from slack_bolt.adapter.socket_mode import SocketModeHandler
 from slack_sdk.oauth.installation_store import InstallationStore, Installation, Bot
-from slack_sdk.oauth.installation_store.models import installation as install_model
 
 load_dotenv()
 SLACK_CLIENT_ID = os.getenv('SLACK_CLIENT_ID')
@@ -46,11 +45,6 @@ class FileInstallationStore(InstallationStore):
 
 store = FileInstallationStore()
 
-def fetch_token(context):
-    team_id = context["team_id"]
-    bot = store.find_bot(enterprise_id=None, team_id=team_id)
-    return bot.bot_token if bot else None
-
 def get_store():
     return store
 
@@ -66,14 +60,8 @@ def authorize(context):
 app = App(
     signing_secret=SLACK_SIGNING_SECRET,
     installation_store=store,
-    authorize=authorize  # ← add this
+    authorize=authorize
 )
-
-app = App(
-    signing_secret=SLACK_SIGNING_SECRET,
-    installation_store=store,
-    authorize=authorize)
-
 
 time_pattern = re.compile(
     r"""\b

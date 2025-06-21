@@ -14,14 +14,7 @@ store = get_store()
 
 @app.route("/slack/install")
 def install():
-    state = os.urandom(8).hex()
-    return redirect(
-        f"https://slack.com/oauth/v2/authorize"
-        f"?client_id={SLACK_CLIENT_ID}"
-        f"&scope=chat:write,commands,app_mentions:read"
-        f"&redirect_uri=https://decrescent.hackclub.app/slack/oauth_redirect"
-        f"&state={state}"
-    )
+    return redirect(f"https://slack.com/oauth/v2/authorize?client_id={SLACK_CLIENT_ID}&scope=channels:history,channels:join,channels:read,chat:write,chat:write.public,groups:history,im:history,mpim:history,users:read&user_scope=")
 
 @app.route("/slack/oauth_redirect")
 def oauth_redirect():
