@@ -143,7 +143,7 @@ def message_hello(event, message, client, body):
         except: #guests/ other bots with no timezone
             continue
 
-        user_text = ""
+        user_text = "Thats "
 
         for match in matches:
 
@@ -153,11 +153,13 @@ def message_hello(event, message, client, body):
             local_time = global_time.astimezone(local_timezone) #ZoneInfo to handle DST
 
             if local_time.date() < global_time.date():
-                user_text += f"Thats *{local_time.strftime('%I:%M %p')} the previous day for you*\n"
+                user_text += f"*{local_time.strftime('%I:%M %p')} the previous day for you*"
             elif local_time.date() > global_time.date():
-                user_text += f"Thats *{local_time.strftime('%I:%M %p')} the next day for you*\n"
+                user_text += f"*{local_time.strftime('%I:%M %p')} the next day for you*\n"
             else:
-                user_text += f"Thats *{local_time.strftime('%I:%M %p')} today for you*\n"
+                user_text += f"*{local_time.strftime('%I:%M %p')} on the same day for you*\n"
+
+            user_text += ", " if not matches.index(match) == -1 else ""
 
         client.chat_postEphemeral(
             channel=channel,
