@@ -56,7 +56,7 @@ def oauth_redirect():
         bot_token=auth["access_token"],
         bot_user_id=auth["bot_user_id"],
         bot_id=auth.get("bot_id", f"bot-id-placeholder-{auth['team']['id']}"), #placeholder for when bot_id is not returned
-        installed_at= datetime.utcnow(),
+        installed_at= datetime.datetime.utcnow(),
         bot_scopes=auth.get("scope", ""),
         is_enterprise_install=auth.get("is_enterprise_install", False)
     ))
