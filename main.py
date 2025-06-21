@@ -3,6 +3,7 @@ import requests
 from flask import Flask, request, redirect
 from dotenv import load_dotenv
 from src.app import get_store
+from src.app import run
 from slack_sdk.oauth.installation_store.models.installation import Installation
 
 load_dotenv()
@@ -52,3 +53,6 @@ def oauth_redirect():
     )
 
     return f"✅ {auth['team']['name']} installed the bot!"
+
+if  __name__ == "__main__":
+    run()

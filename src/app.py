@@ -1,8 +1,8 @@
-import os, re, json
+import os, re, json, threading
 from datetime import datetime
 from dotenv import load_dotenv
 from zoneinfo import ZoneInfo
-import threading
+from waitress import serve
 from slack_bolt import App
 from slack_bolt.adapter.socket_mode import SocketModeHandler
 from slack_sdk.oauth.installation_store import InstallationStore, Installation, Bot
@@ -137,6 +137,11 @@ def message_hello(event, message, client, body):
 
 
 def run():
-    handler = SocketModeHandler(app, SLACK_APP_TOKEN)
+    print("Bolt app is running")
+    flask_thread = threading.Thread(target=lambda: serve(app, host="127.0.0.1", port="5050"))
+    flask_thread.start()
+
+    print("Flask redirect is online")
+    handler= SocketModeHandler(app, SLACK_APP_TOKEN)
     handler.connect()
     threading.Event().wait()
