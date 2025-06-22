@@ -145,7 +145,7 @@ def message_hello(event, message, client, body):
 
         user_text = "Thats "
 
-        for match in matches:
+        for pos, match in enumerate(matches):
 
             naive_dt = datetime.combine(global_now.date(), match)
             global_time = naive_dt.replace(tzinfo=global_timezone)
@@ -155,12 +155,12 @@ def message_hello(event, message, client, body):
             if local_time.date() < global_time.date():
                 user_text += f"*{local_time.strftime('%I:%M %p')} the previous day*"
             elif local_time.date() > global_time.date():
-                user_text += f"*{local_time.strftime('%I:%M %p')}*"
+                user_text += f"*{local_time.strftime('%I:%M %p')} the next day*"
             else:
-                user_text += f"*{local_time.strftime('%I:%M %p')} on the same day*"
+                user_text += f"*{local_time.strftime('%I:%M %p')}*"
 
-            user_text += " and" if matches.index(match) == len(matches)-2 else ""
-            user_text += ", " if not matches.index(match) == -1 else " for you"
+            user_text += " and" if pos == len(matches)-2 else ""
+            user_text += ", " if pos != len(matches)-1 else " for you"
 
         client.chat_postEphemeral(
             channel=channel,
