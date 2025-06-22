@@ -160,7 +160,7 @@ def message_hello(event, message, client, body):
                 user_text += f"*{local_time.strftime('%I:%M %p')}*"
 
             user_text += " and" if pos == len(matches)-2 else ""
-            user_text += ", " if pos != len(matches)-1 else " for you"
+            user_text += ", " if pos != len(matches)-1 | len(matches)-1 else " for you"
 
         client.chat_postEphemeral(
             channel=channel,
