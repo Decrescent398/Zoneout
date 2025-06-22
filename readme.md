@@ -25,6 +25,9 @@
 -   🤖 **No Conversion for Bots**\
     Bots don't have timezones set via the Slack API, so no conversions are sent to them.
 
+-   #️⃣ **No Replies in Threads**\
+    The Slack API does not allow ephemeral message replies in threads, the bot however will to reply to all conversions in threads within the channel    
+
 * * * * *
 
 🚀 Use Case
