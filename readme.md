@@ -2,35 +2,35 @@
   <img src="assets/logo.png" alt="Description" width="400"/>
 </p>
 
-✅ Features
+Features
 ----------
 
--   🔍 **Messy Time Recognition**\
+-   **Messy Time Recognition**\
     Advanced regex detects time mentions like `10 00AM`, `7pm`, `5:30 am`, `8: 00PM`, etc.
 
--   🌍 **Timezone Auto-Conversion**\
+-   **Timezone Auto-Conversion**\
     Replies to each user **ephemerally** with the time converted to **their Slack-set timezone**, including **Daylight Saving Time** adjustments.
 
--   🔒 **Private and Clutter-Free**\
+-   **Private and Clutter-Free**\
     Uses ephemeral messages --- no message flooding, only the intended user sees the converted time.
 
 * * * * *
 
-⚠️ Known Limitations
+Known Limitations
 --------------------
 
--   ❌ **Ambiguous Timezones Not Handled**\
+-   **Ambiguous Timezones Not Handled**\
     Timezones like `ET` or `NZST` are skipped due to conflicts (e.g., `ET` = Eastern Time *or* Egyptian Time).
 
--   🤖 **No Conversion for Bots**\
+-   **No Conversion for Bots**\
     Bots don't have timezones set via the Slack API, so no conversions are sent to them.
 
--   #️⃣ **No Replies in Threads**\
+-   **No Replies in Threads**\
     The Slack API does not allow ephemeral message replies in threads, the bot however will to reply to all conversions in threads within the channel    
 
 * * * * *
 
-🚀 Use Case
+Use Case
 -----------
 
 > *"Meeting at 9:30am tomorrow PST"*\
@@ -38,7 +38,7 @@
 
 * * * * *
 
-📦 How It Works
+How It Works
 ---------------
 
 1.  Listens to messages in real-time using Slack's Socket Mode.
@@ -55,7 +55,7 @@
 
 * * * * *
 
-💡 Example Output
+Example Output
 -----------------
 
 > Original: "let's meet at 7:15pm PST today"
