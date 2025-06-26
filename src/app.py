@@ -1,4 +1,4 @@
-import os, re, json
+import os, re, json, time
 from datetime import datetime
 from dotenv import load_dotenv
 from zoneinfo import ZoneInfo
@@ -167,3 +167,6 @@ def message_hello(event, message, client, body):
             user=person,
             text=user_text
         )
+
+        if not len(members) > 50:
+            time.sleep(1.1)
